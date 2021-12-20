@@ -7,4 +7,8 @@ Rails.application.routes.draw do
   put '/api/user', to: 'users#update'
   post '/api/auth/login', to: 'sessions#create'
   delete '/api/auth/logout', to: 'sessions#destroy'
+  post '/api/bubbles', to: 'bubbles#create'
+  get '/api/bubbles', to: 'bubbles#index'
+  post '/api/bubbles/:bubble_id', to: 'game_session#process_game'
 end
+
