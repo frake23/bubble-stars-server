@@ -12,7 +12,6 @@ class SessionsController < ApplicationController
 
   def destroy
     log_out
-    p session
     render json: { success: true }
   end
 end

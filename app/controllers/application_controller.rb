@@ -9,7 +9,6 @@ class ApplicationController < ActionController::API
     @user
   end
 
-
   def log_in(user)
     session[:current_user_id] = user.id
   end

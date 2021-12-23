@@ -10,5 +10,7 @@ Rails.application.routes.draw do
   post '/api/bubbles', to: 'bubbles#create'
   get '/api/bubbles', to: 'bubbles#index'
   post '/api/bubbles/:bubble_id', to: 'game_session#process_game'
+  get '/api/bubbles/:bubble_id', to: 'bubbles#single'
+  get '/api/bubbles/:bubble_id/stats', to: 'bubbles#stats'
 end
 

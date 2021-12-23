@@ -1,9 +1,9 @@
 class UsersController < ApplicationController
-  before_action :set_user, only: %i[update]
+  before_action :init_session, only: %i[show]
+  before_action :set_user, only: %i[update show]
 
   # GET /users/1
   def show
-    return session[:init] = 'init' unless set_user
     render(json: User.where(id: @user.id).select('id, username').first)
   end
 
@@ -29,6 +29,10 @@ class UsersController < ApplicationController
   end
 
   private
+
+  def init_session
+    session[:init] = 'init' unless logged_in?
+  end
 
   def user_params
     params.permit(:email, :username, :password)

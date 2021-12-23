@@ -2,6 +2,37 @@ class BubblesController < ApplicationController
   before_action :set_user, only: %i[create update destroy]
   before_action :set_bubble, only: %i[show update destroy]
 
+  # GET /bubbles/1/stats
+  def stats
+    bubble = Bubble
+             .where(id: params[:bubble_id])
+             .select('title, description, games_count, id')
+             .first
+    bubble_response = bubble
+                      .as_json
+                      .merge({
+                               bubble_variants: bubble.bubble_variants
+                                 .order(won_times: :desc)
+                                 .map do |variant|
+                                   variant
+                                     .as_json
+                                     .slice('name', 'won_times')
+                                     .merge({ image: variant.cdn_image })
+                                     .merge({ winrate: (variant.won_times * 100.0 / bubble.games_count).round(2) })
+                                 end
+                             })
+
+    render json: bubble_response
+  end
+
+  # GET /bubbles/1
+  def single
+    bubble = Bubble.where(id: params[:bubble_id]).select('title, description').first
+    return head(404) unless bubble
+
+    render json: bubble
+  end
+
   # GET /bubbles
   def index
     bubbles = if params[:user_id]
@@ -17,10 +48,9 @@ class BubblesController < ApplicationController
                 bubbles.id,
                 bubbles.variants_count,
                 users.id as user_id,
-                users.username'
-              )
+                users.username')
               .all
-              .map do |bubble| 
+              .map do |bubble|
                 bubble
                   .as_json
                   .merge({
@@ -28,7 +58,7 @@ class BubblesController < ApplicationController
                                      .where(bubble_id: bubble.id)
                                      .order(:won_times)
                                      .limit(2)
-                                     .map{ |s| s.cdn_image }
+                                     .map(&:cdn_image)
                          })
               end
     render json: bubbles
@@ -67,13 +97,13 @@ class BubblesController < ApplicationController
         .each_with_index
         .map do |v, i|
           v.invalid? ?
-            v.errors.map { |err|  {"bubble_variants.#{i}.#{err.attribute}": v.errors.messages_for(err.attribute)} } :
+            v.errors.map { |err|  { "bubble_variants.#{i}.#{err.attribute}": v.errors.messages_for(err.attribute) } } :
             nil
         end
-        .reject { |i| i.nil? }
+        .reject(&:nil?)
         .flatten
-        .reduce(Hash.new) {|i, h| h.merge i}
-        .merge(errors ? errors : {})
+        .reduce({}) {|i, h| h.merge i}
+        .merge(errors || {})
     end
     return render json: { errors: errors } if errors
 
