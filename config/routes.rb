@@ -12,5 +12,6 @@ Rails.application.routes.draw do
   post '/api/bubbles/:bubble_id', to: 'game_session#process_game'
   get '/api/bubbles/:bubble_id', to: 'bubbles#single'
   get '/api/bubbles/:bubble_id/stats', to: 'bubbles#stats'
+  delete '/api/bubbles/:bubble_id', to: 'bubbles#destroy'
 end
 

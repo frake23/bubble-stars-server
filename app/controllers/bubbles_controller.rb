@@ -56,7 +56,7 @@ class BubblesController < ApplicationController
                   .merge({
                            images: BubbleVariant
                                      .where(bubble_id: bubble.id)
-                                     .order(:won_times)
+                                     .order(won_times: :desc)
                                      .limit(2)
                                      .map(&:cdn_image)
                          })
@@ -118,11 +118,16 @@ class BubblesController < ApplicationController
 
   # DELETE /bubbles/1
   def destroy
+    head(404) unless @bubble
+    head(401) if !@user || @user.id != @bubble.user_id
+
+    @bubble.bubble_variants.each { |var| var.destroy }
     @bubble.destroy
+    render json: { success: true }
   end
 
   private
   def set_bubble
-    @bubble = Bubble.find(params[:id])
+    @bubble = Bubble.find_by_id(params[:bubble_id])
   end
 end
